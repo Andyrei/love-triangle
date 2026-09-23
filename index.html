@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Compatibility Matrix | Mind-Heart-Body Engine</title>
+
+    <!-- Google Fonts & Tailwind CDN -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        mind: '#38bdf8',
+                        heart: '#f43f5e',
+                        body: '#acc814',
+                        darkbg: '#0f172a',
+                        cardbg: '#1e293b',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="p-4 md:p-8 text-slate-100 flex flex-col justify-between min-h-screen">
+
+    <!-- Toast Notification Container -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-800 border border-emerald-500/50 text-emerald-300 px-5 py-3 rounded-xl shadow-2xl flex items-center space-x-3 pointer-events-none">
+        <span class="text-xl">📋</span>
+        <span id="toast-message" class="text-xs font-semibold tracking-wide">Summary copied to clipboard!</span>
+    </div>
+
+    <div class="max-w-7xl mx-auto w-full space-y-6">
+
+        <!-- Header Section -->
+        <header class="flex flex-col md:flex-row md:items-center md:justify-between border-b border-slate-800 pb-6 gap-4">
+            <div>
+                <div class="flex items-center space-x-3 mb-2">
+                    <span id="header-brain" class="text-3xl md:text-4xl anim-brain">🧠</span>
+                    <span id="header-heart" class="text-3xl md:text-4xl anim-heart">🫀</span>
+                    <span id="header-body" class="text-3xl md:text-4xl anim-eggplant">🍆</span>
+                    <h1 class="text-3xl md:text-4xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-sky-400 via-rose-400 to-lime-400">
+                        The Compatibility Matrix
+                    </h1>
+                </div>
+                <p class="text-slate-400 text-sm md:text-base font-medium">
+                    An interactive triadic Mind-Heart-Body relationship typology & partner alignment engine
+                </p>
+            </div>
+
+            <!-- Header Controls: Single vs Dual Mode & Share -->
+            <div class="flex flex-wrap items-center gap-3">
+
+                <!-- Single Profile vs Partner Comparison Toggle -->
+                <div class="bg-slate-900/90 p-1.5 rounded-xl border border-slate-700/80 flex items-center space-x-1">
+                    <button id="mode-single-btn" onclick="setMode('single')" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all bg-sky-500 text-white shadow-md">
+                        👤 Single Profile
+                    </button>
+                    <button id="mode-partner-btn" onclick="setMode('partner')" class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all">
+                        👥 Partner Comparison
+                    </button>
+                </div>
+
+                <!-- Export / Share Snapshot Button -->
+                <button onclick="copySnapshot()" class="preset-btn px-4 py-2 rounded-xl text-xs font-bold text-sky-300 flex items-center space-x-2 border border-sky-500/30 hover:border-sky-400">
+                    <span>✨ Export Snapshot</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- MAIN DASHBOARD GRID -->
+        <main class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+            <!-- LEFT COLUMN: VISUAL TRIANGLE CANVAS & SLIDERS -->
+            <section class="lg:col-span-6 flex flex-col space-y-6">
+
+                <!-- SVG Radar Canvas Card -->
+                <div class="glass-card rounded-2xl p-6 relative overflow-hidden flex flex-col items-center justify-center">
+
+                    <div class="absolute inset-0 bg-gradient-to-b from-slate-900/30 via-transparent to-slate-900/50 pointer-events-none"></div>
+
+                    <!-- Top Info Label & Dismissable Drag Hint -->
+                    <div class="w-full flex justify-between items-center mb-2 z-10 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                        <span class="flex items-center space-x-1.5">
+                            <span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span>
+                            <span>Interactive Triadic Matrix Canvas</span>
+                        </span>
+
+                        <!-- Dismissable Drag Hint Prompt -->
+                        <span id="canvas-drag-hint" class="text-sky-400 font-mono text-[11px] bg-sky-500/10 px-2 py-0.5 rounded-md border border-sky-500/30 animate-pulse">
+                            💡 Click/drag inside canvas to recalibrate
+                        </span>
+                    </div>
+
+                    <!-- Partner Selector Tabs (Shown in Partner Comparison Mode) -->
+                    <div id="partner-tabs-container" class="w-full mb-3 z-10 hidden flex justify-center">
+                        <div class="bg-slate-900/90 p-1 rounded-xl border border-slate-700/80 inline-flex space-x-1">
+                            <button id="tab-person-a" onclick="setActivePerson('A')" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-sky-500 text-white shadow">
+                                Person A (You)
+                            </button>
+                            <button id="tab-person-b" onclick="setActivePerson('B')" class="px-4 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white">
+                                Person B (Partner)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- SVG Container -->
+                    <div class="w-full max-w-[440px] aspect-square relative z-10 flex items-center justify-center">
+                        <svg id="matrix-svg" viewBox="0 0 400 380" class="w-full h-full drop-shadow-2xl overflow-visible interactive-svg-canvas">
+                            <defs>
+                                <!-- Person A Radial Fill Gradient -->
+                                <radialGradient id="poly-gradient-a" cx="50%" cy="50%" r="50%">
+                                    <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.5" />
+                                    <stop offset="60%" stop-color="#f43f5e" stop-opacity="0.35" />
+                                    <stop offset="100%" stop-color="#acc814" stop-opacity="0.25" />
+                                </radialGradient>
+
+                                <!-- Person B Radial Fill Gradient -->
+                                <radialGradient id="poly-gradient-b" cx="50%" cy="50%" r="50%">
+                                    <stop offset="0%" stop-color="#c084fc" stop-opacity="0.5" />
+                                    <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.3" />
+                                </radialGradient>
+                            </defs>
+
+                            <!-- Background Reference Grid (Concentric Triangles) -->
+                            <polygon points="200,40 350,310 50,310" fill="none" stroke="#334155" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.6"/>
+                            <polygon points="200,107.5 312.5,310 87.5,310" fill="none" stroke="#334155" stroke-width="1" stroke-dasharray="2 2" opacity="0.4"/>
+                            <polygon points="200,175 275,310 125,310" fill="none" stroke="#334155" stroke-width="1" stroke-dasharray="2 2" opacity="0.3"/>
+
+                            <!-- Axis Radial Lines -->
+                            <line x1="200" y1="220" x2="200" y2="40" stroke="#334155" stroke-width="1" opacity="0.5" />
+                            <line x1="200" y1="220" x2="50" y2="310" stroke="#334155" stroke-width="1" opacity="0.5" />
+                            <line x1="200" y1="220" x2="350" y2="310" stroke="#334155" stroke-width="1" opacity="0.5" />
+
+                            <!-- Person B Polygon (Partner Comparison Mode) -->
+                            <polygon id="active-polygon-b" points="200,220 200,220 200,220"
+                                     fill="url(#poly-gradient-b)"
+                                     stroke="#c084fc"
+                                     stroke-width="2"
+                                     stroke-dasharray="4 4"
+                                     stroke-linejoin="round"
+                                     class="smooth-transition hidden" />
+
+                            <!-- Active Polygon Area (Person A or Active Person) -->
+                            <polygon id="active-polygon" points="200,40 350,310 50,310"
+                                     fill="url(#poly-gradient-a)"
+                                     stroke="#f8fafc"
+                                     stroke-width="2.5"
+                                     stroke-linejoin="round"
+                                     class="smooth-transition" />
+
+                            <!-- Active Vector Connector Lines -->
+                            <line id="line-mind" x1="200" y1="220" x2="200" y2="40" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" class="smooth-transition" />
+                            <line id="line-heart" x1="200" y1="220" x2="50" y2="310" stroke="#f43f5e" stroke-width="2.5" stroke-linecap="round" class="smooth-transition" />
+                            <line id="line-body" x1="200" y1="220" x2="350" y2="310" stroke="#acc814" stroke-width="2.5" stroke-linecap="round" class="smooth-transition" />
+
+                            <!-- Node Badge Circles with Dynamic Glow Filter -->
+                            <!-- MIND (Top Axis) -->
+                            <g transform="translate(200, 35)" class="draggable-handle" id="">
+                                <circle id="node-mind-circle" r="25" fill="#0f172a" stroke="#38bdf8" stroke-width="2.5" />
+                                <text y="7" text-anchor="middle" font-size="20" class="">🧠</text>
+                            </g>
+                            <text x="200" y="-2" text-anchor="middle" fill="#38bdf8" font-size="11" font-weight="800" letter-spacing="1">MIND (INTELLECT)</text>
+
+                            <!-- HEART (Bottom Left Axis) -->
+                            <g transform="translate(45, 315)" class="draggable-handle" id="handle-heart">
+                                <circle id="node-heart-circle" r="25" fill="#0f172a" stroke="#f43f5e" stroke-width="2.5" />
+                                <text y="7" text-anchor="middle" font-size="20" class="">🫀</text>
+                            </g>
+                            <text x="45" y="358" text-anchor="middle" fill="#f43f5e" font-size="11" font-weight="800" letter-spacing="1">HEART (EMOTION)</text>
+
+                            <!-- BODY (Bottom Right Axis) -->
+                            <g transform="translate(355, 315)" class="draggable-handle" id="handle-body">
+                                <circle id="node-body-circle" r="25" fill="#0f172a" stroke="#acc814" stroke-width="2.5" />
+                                <text y="7" text-anchor="middle" font-size="20" class="">🍆</text>
+                            </g>
+                            <text x="355" y="358" text-anchor="middle" fill="#acc814" font-size="11" font-weight="800" letter-spacing="1">BODY (PHYSICAL)</text>
+
+                            <!-- Center Intersection Handle - Person A -->
+                            <circle id="matrix-center-point" cx="200" cy="220" r="9" fill="#f8fafc" stroke="#0f172a" stroke-width="3" class="smooth-transition draggable-handle" />
+                            <circle id="matrix-center-pulse" cx="200" cy="220" r="16" fill="none" stroke="#f8fafc" stroke-width="1.5" opacity="0.6" class="animate-ping pointer-events-none" />
+
+                            <!-- Center Point Handle - Person B -->
+                            <circle id="matrix-center-point-b" cx="200" cy="220" r="7" fill="#c084fc" stroke="#0f172a" stroke-width="2" class="smooth-transition hidden" />
+                        </svg>
+                    </div>
+
+                    <div class="w-full text-center mt-2">
+                        <span id="center-coords-text" class="font-mono text-xs text-slate-300 font-semibold bg-slate-900/80 px-3.5 py-1.5 rounded-full border border-slate-700/80 shadow">
+                            🧠 50% | 🫀 50% | 🍆 50%
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Custom Slider Controls Card -->
+                <div class="glass-card rounded-2xl p-6 space-y-5">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center space-x-2">
+                            <span>Vector Calibration</span>
+                            <span id="active-profile-label" class="text-xs text-sky-400 font-mono font-normal"></span>
+                        </h3>
+                        <span class="text-xs font-mono text-slate-400">0% – 100%</span>
+                    </div>
+
+                    <!-- Mind Slider -->
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between items-center text-sm">
+                            <label for="mind-slider" class="font-semibold text-sky-400 flex items-center space-x-2">
+                                <span class="">🧠</span>
+                                <span>Mind Attraction (Intellectual)</span>
+                            </label>
+                            <span id="mind-val" class="font-mono font-bold text-sky-400 text-base">50%</span>
+                        </div>
+                        <input type="range" id="mind-slider" min="0" max="100" value="50">
+                    </div>
+
+                    <!-- Heart Slider -->
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between items-center text-sm">
+                            <label for="heart-slider" class="font-semibold text-rose-400 flex items-center space-x-2">
+                                <span class="">🫀</span>
+                                <span>Heart Connection (Emotional)</span>
+                            </label>
+                            <span id="heart-val" class="font-mono font-bold text-rose-400 text-base">50%</span>
+                        </div>
+                        <input type="range" id="heart-slider" min="0" max="100" value="50">
+                    </div>
+
+                    <!-- Body Slider -->
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between items-center text-sm">
+                            <label for="body-slider" class="font-semibold text-lime-400 flex items-center space-x-2">
+                                <span class="">🍆</span>
+                                <span>Body Chemistry (Physical)</span>
+                            </label>
+                            <span id="body-val" class="font-mono font-bold text-lime-400 text-base">50%</span>
+                        </div>
+                        <input type="range" id="body-slider" min="0" max="100" value="50">
+                    </div>
+
+                    <!-- Expanded Presets Engine (Sternberg & Pop Culture) -->
+                    <div class="pt-4 border-t border-slate-800 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Presets Library</span>
+
+                            <!-- Preset Category Filter Pills -->
+                            <div class="flex items-center space-x-1 text-[11px] font-semibold bg-slate-900 p-1 rounded-lg border border-slate-800">
+                                <button onclick="filterPresets('all')" id="preset-tab-all" class="px-2 py-0.5 rounded text-sky-400 bg-slate-800">All (16)</button>
+                                <button onclick="filterPresets('sternberg')" id="preset-tab-sternberg" class="px-2 py-0.5 rounded text-slate-400 hover:text-white">Sternberg</button>
+                                <button onclick="filterPresets('pop')" id="preset-tab-pop" class="px-2 py-0.5 rounded text-slate-400 hover:text-white">Pop Culture</button>
+                            </div>
+                        </div>
+
+                        <!-- Presets Pill Container -->
+                        <div class="flex flex-wrap gap-2 max-h-48 overflow-y-auto pr-1" id="preset-buttons-container">
+                            <!-- Populated Dynamically via JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RIGHT COLUMN: ANALYTICAL READOUT & DIAGNOSTICS -->
+            <section class="lg:col-span-6 flex flex-col space-y-6">
+
+                <!-- Main Dynamic Archetype Status Card -->
+                <div id="status-card" class="glass-card glass-card-glow rounded-2xl p-6 md:p-8 flex flex-col justify-between space-y-6 smooth-transition border-l-4 border-l-emerald-400">
+
+                    <!-- Top Readout Header -->
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-bold uppercase tracking-widest text-slate-400">Dynamic Archetype Readout</span>
+                            <span id="badge-container" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                                Ideal Harmony
+                            </span>
+                        </div>
+                        <h2 id="state-title" class="text-2xl md:text-3xl font-black tracking-tight text-white mb-2">
+                            Consummate Love / Perfect Match
+                        </h2>
+                        <p id="state-description" class="text-slate-300 text-sm md:text-base leading-relaxed">
+                            A rare and powerful synthesis of intellectual resonance, profound emotional vulnerability, and intense physical chemistry.
+                        </p>
+                    </div>
+
+                    <!-- Partner Alignment Overlay Card (In Partner Comparison Mode) -->
+                    <div id="partner-alignment-card" class="hidden bg-slate-900/90 rounded-xl p-4 border border-slate-700/80 space-y-3 shadow-inner">
+                        <div class="flex justify-between items-center text-xs font-bold text-slate-300 uppercase tracking-wider">
+                            <span>👥 Partner Alignment Analytics</span>
+                            <span id="alignment-score-badge" class="font-mono text-emerald-400 text-sm font-extrabold bg-emerald-500/10 px-2.5 py-0.5 rounded-md border border-emerald-500/30">92% Match</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 pt-1 text-center">
+                            <div class="bg-slate-800/60 p-2.5 rounded-lg border border-slate-700/50">
+                                <span class="block text-[10px] text-slate-400 font-bold uppercase">Symmetry Delta</span>
+                                <span id="symmetry-gap-text" class="font-mono text-sm font-bold text-sky-400">8% Gap</span>
+                            </div>
+                            <div class="bg-slate-800/60 p-2.5 rounded-lg border border-slate-700/50">
+                                <span class="block text-[10px] text-slate-400 font-bold uppercase">Dynamic Type</span>
+                                <span id="complementary-type-text" class="text-xs font-bold text-purple-300">Harmonious Mirror</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4 REAL-TIME METRIC GAUGES -->
+                    <div class="grid grid-cols-2 gap-3">
+
+                        <!-- Metric 1: Long-Term Viability -->
+                        <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800/90 flex flex-col justify-between space-y-2">
+                            <div class="flex items-center justify-between text-xs font-bold text-slate-400">
+                                <span>🏔️ Long-Term Viability</span>
+                                <span id="gauge-viability-val" class="font-mono text-emerald-400">85%</span>
+                            </div>
+                            <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                                <div id="gauge-viability-bar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full smooth-transition" style="width: 85%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Metric 2: Volatility Index -->
+                        <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800/90 flex flex-col justify-between space-y-2">
+                            <div class="flex items-center justify-between text-xs font-bold text-slate-400">
+                                <span>⚡ Volatility Index</span>
+                                <span id="gauge-volatility-val" class="font-mono text-rose-400">20%</span>
+                            </div>
+                            <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                                <div id="gauge-volatility-bar" class="bg-gradient-to-r from-amber-500 to-rose-500 h-full smooth-transition" style="width: 20%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Metric 3: Communication Ease -->
+                        <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800/90 flex flex-col justify-between space-y-2">
+                            <div class="flex items-center justify-between text-xs font-bold text-slate-400">
+                                <span>💬 Communication Flow</span>
+                                <span id="gauge-comm-val" class="font-mono text-sky-400">90%</span>
+                            </div>
+                            <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                                <div id="gauge-comm-bar" class="bg-gradient-to-r from-sky-500 to-indigo-400 h-full smooth-transition" style="width: 90%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Metric 4: Spontaneity & Spark -->
+                        <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800/90 flex flex-col justify-between space-y-2">
+                            <div class="flex items-center justify-between text-xs font-bold text-slate-400">
+                                <span>🔥 Spontaneity / Spark</span>
+                                <span id="gauge-spark-val" class="font-mono text-lime-400">88%</span>
+                            </div>
+                            <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                                <div id="gauge-spark-bar" class="bg-gradient-to-r from-lime-500 to-amber-400 h-full smooth-transition" style="width: 88%"></div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Energy Breakdown Distribution Bar -->
+                    <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-800 space-y-3">
+                        <div class="flex justify-between items-center text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                            <span>Vector Energy Distribution</span>
+                            <span id="dominant-vector-text" class="text-sky-400">Balanced Synergy</span>
+                        </div>
+
+                        <!-- Multi-Segment Progress Bar -->
+                        <div class="h-3 w-full bg-slate-800 rounded-full overflow-hidden flex shadow-inner">
+                            <div id="mind-bar-split" class="h-full bg-sky-400 smooth-transition" style="width: 33.3%"></div>
+                            <div id="heart-bar-split" class="h-full bg-rose-500 smooth-transition" style="width: 33.3%"></div>
+                            <div id="body-bar-split" class="h-full bg-lime-400 smooth-transition" style="width: 33.3%"></div>
+                        </div>
+
+                        <!-- Split Share Percentages -->
+                        <div class="grid grid-cols-3 gap-2 pt-1 text-center">
+                            <div class="bg-slate-800/50 p-2 rounded-lg border border-slate-700/40">
+                                <span class="block text-[10px] text-slate-400 uppercase font-bold">Mind Share</span>
+                                <span id="mind-split-pct" class="font-mono text-xs font-bold text-sky-400">33%</span>
+                            </div>
+                            <div class="bg-slate-800/50 p-2 rounded-lg border border-slate-700/40">
+                                <span class="block text-[10px] text-slate-400 uppercase font-bold">Heart Share</span>
+                                <span id="heart-split-pct" class="font-mono text-xs font-bold text-rose-400">33%</span>
+                            </div>
+                            <div class="bg-slate-800/50 p-2 rounded-lg border border-slate-700/40">
+                                <span class="block text-[10px] text-slate-400 uppercase font-bold">Body Share</span>
+                                <span id="body-split-pct" class="font-mono text-xs font-bold text-lime-400">33%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Key Insights Grid (Strength & Challenge) -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-slate-900/40 rounded-xl p-4 border border-slate-800">
+                            <div class="flex items-center space-x-2 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-2">
+                                <span>✨ Key Core Strength</span>
+                            </div>
+                            <p id="strength-text" class="text-slate-300 text-xs leading-relaxed">
+                                Complete multi-dimensional alignment creating effortless trust and mutual growth.
+                            </p>
+                        </div>
+                        <div class="bg-slate-900/40 rounded-xl p-4 border border-slate-800">
+                            <div class="flex items-center space-x-2 text-amber-400 text-xs font-bold uppercase tracking-wider mb-2">
+                                <span>⚠️ System Vulnerability</span>
+                            </div>
+                            <p id="challenge-text" class="text-slate-300 text-xs leading-relaxed">
+                                Maintaining high energy across all three vectors requires active intentional effort.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Actionable Growth Advice Box -->
+                    <div class="bg-gradient-to-r from-slate-900 via-slate-800/90 to-slate-900 p-4 rounded-xl border border-slate-700/60 flex items-start space-x-3">
+                        <span class="text-xl">💡</span>
+                        <div>
+                            <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">Actionable Nurturing Growth Tip</h4>
+                            <p id="advice-text" class="text-slate-300 text-xs leading-relaxed">
+                                Nurture each pillar consistently. Don't take total harmony for granted; celebrate small milestones together.
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="mt-8 text-center text-xs text-slate-500 border-t border-slate-800/80 pt-6">
+            <p>The Compatibility Matrix • Interactive Mind-Heart-Body Relationship Engine</p>
+        </footer>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script src="script.js"></script>
+</body>
+</html>
